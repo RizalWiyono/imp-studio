@@ -1,0 +1,111 @@
+version: "3.9"
+
+services:
+  # ==========================
+  # BACKEND (Laravel + PHP-FPM)
+  # ==========================
+  laravel:
+    build:
+      context: ./laravel
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    restart: always
+    volumes:
+      - ./laravel:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:examplekey1234567890=
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=laravel
+      - DB_USERNAME=laravel
+      - DB_PASSWORD=secret
+    depends_on:
+      - mysql
+    networks:
+      - app_network
+
+  # ==========================
+  # FRONTEND (Next.js)
+  # ==========================
+  nextjs:
+    build:
+      context: ./nextjs
+      dockerfile: Dockerfile
+    container_name: nextjs_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost/api
+      - NODE_ENV=production
+    volumes:
+      - ./nextjs:/usr/src/app
+    networks:
+      - app_network
+
+  # ==========================
+  # DATABASE (MySQL)
+  # ==========================
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: secret
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app_network
+
+  # ==========================
+  # PHPMYADMIN (Optional)
+  # ==========================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=mysql
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    depends_on:
+      - mysql
+    networks:
+      - app_network
+
+  # ==========================
+  # NGINX REVERSE PROXY
+  # ==========================
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./laravel:/var/www/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - laravel
+      - nextjs
+    networks:
+      - app_network
+
+# ==========================
+# VOLUMES & NETWORKS
+# ==========================
+volumes:
+  db_data:
+
+networks:
+  app_network:
+    driver: bridge
