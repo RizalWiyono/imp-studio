@@ -15,12 +15,12 @@ services:
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
-      - APP_KEY=base64:examplekey1234567890=
+      - APP_KEY=base64:MJ5s9yecfLIb8UinPfVdySN11Sy3uVt/T0Jg4UJKJpQ=
       - DB_HOST=mysql
       - DB_PORT=3306
-      - DB_DATABASE=laravel
-      - DB_USERNAME=laravel
-      - DB_PASSWORD=secret
+      - DB_DATABASE=imp
+      - DB_USERNAME=root
+      - DB_PASSWORD=
     depends_on:
       - mysql
     networks:
@@ -54,31 +54,13 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
+      MYSQL_DATABASE: imp
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 
     volumes:
       - db_data:/var/lib/mysql
     ports:
       - "3306:3306"
-    networks:
-      - app_network
-
-  # ==========================
-  # PHPMYADMIN (Optional)
-  # ==========================
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    container_name: phpmyadmin
-    restart: always
-    ports:
-      - "8080:80"
-    environment:
-      - PMA_HOST=mysql
-      - PMA_USER=root
-      - PMA_PASSWORD=root
-    depends_on:
-      - mysql
     networks:
       - app_network
 
